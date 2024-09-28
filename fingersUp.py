@@ -94,6 +94,8 @@ with mp_hands.Hands(
     stable_start_time = None
     stability_threshold = 0.01  # Adjust this value to change sensitivity
     stability_duration = 1.5  # In seconds
+    read_time = None
+    read_delay = 10
 
     while cap.isOpened():
         success, image = cap.read()
@@ -129,7 +131,9 @@ with mp_hands.Hands(
                     if distance < stability_threshold:
                         if stable_start_time is None:
                             stable_start_time = time.time()
-                        elif time.time() - stable_start_time >= stability_duration:
+                        if (time.time() - stable_start_time >= stability_duration) and (read_time is None or (time.time() - read_time >= read_delay)):
+                            read_time = time.time()
+                            print(f"Hands stable for {stability_duration} seconds. Please wait {read_delay} seconds for further reads.")
                             recognizeGesture(handedness, hand_landmarks)
                             stable_start_time = None  # Reset timer after gesture is recognized
                     else:
