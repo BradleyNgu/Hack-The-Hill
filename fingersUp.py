@@ -130,7 +130,6 @@ with mp_hands.Hands(
                         if stable_start_time is None:
                             stable_start_time = time.time()
                         elif time.time() - stable_start_time >= stability_duration:
-                            print(f"Hand Landmarks (stable for {stability_duration} seconds):")
                             recognizeGesture(handedness, hand_landmarks)
                             stable_start_time = None  # Reset timer after gesture is recognized
                     else:
