@@ -7,6 +7,9 @@ import serial
 
 
 def sendDataToArduino(data):
+    # Set up the serial communication (adjust the port and baud rate as needed)
+    arduino = serial.Serial(port='/dev/cu.usbmodem101', baudrate=9600, timeout=.1)  # Adjust 'COM3' to your Arduino's port
+    
     arduino.write(bytes(data, 'utf-8'))  # Send data to Arduino as a string
     time.sleep(0.05)  # Delay to avoid overwhelming the serial communication
 
@@ -76,10 +79,6 @@ def recognizeGesture(handedness, hand_landmarks):
 
 
 def startMediaPipe():
-    # Set up the serial communication (adjust the port and baud rate as needed)
-    arduino = serial.Serial(port='/dev/cu.usbmodem101', baudrate=9600, timeout=.1)  # Adjust 'COM3' to your Arduino's port
-
-
     mp_drawing = mp.solutions.drawing_utils
     mp_drawing_styles = mp.solutions.drawing_styles
     mp_hands = mp.solutions.hands
