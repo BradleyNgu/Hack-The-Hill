@@ -4,10 +4,10 @@
 Servo myServo;
 
 // Variables to store LED pin numbers
-int ledPins[] = {2, 3, 4, 5, 6};  // LEDs representing 1 to 5 fingers
+int ledPins[] = {2, 3, 4, 5, 6};  // Red, Blue, White, Green, Yellow LEDs for 1-5 fingers
 
-// Angle for each finger count (1-indexed, 1 finger = 30 degrees, 2 fingers = 60, etc.)
-int angles[] = {30, 60, 90, 120, 150};  // Adjusted for 1 to 5 fingers
+// Angle for each finger count (1 finger = 30 degrees, 2 fingers = 60, etc.)
+int angles[] = {30, 60, 90, 120, 150};  // Servo angles for 1-5 fingers
 
 // Default delay time after a gesture is detected (in milliseconds)
 unsigned long gestureTimeout = 3000;  // 3 seconds
@@ -15,9 +15,9 @@ unsigned long lastGestureTime = 0;    // To keep track of the last time a gestur
 
 void setup() {
   // Attach the servo to its corresponding pin
-  myServo.attach(9);  // Attach the servo to pin 9 (or any other pin you want)
+  myServo.attach(9);  // Attach the servo to pin 9
 
-  // Set the pins as OUTPUT for LEDs
+  // Set the LED pins as OUTPUT
   for (int i = 0; i < 5; i++) {
     pinMode(ledPins[i], OUTPUT);
   }
@@ -53,12 +53,12 @@ void loop() {
 
       // Control the LEDs
       for (int i = 0; i < 5; i++) {
-        if (i < fingersUp) {
-          digitalWrite(ledPins[i], HIGH);  // Turn on the LED for the current finger count
+        if (i == (fingersUp - 1)) {
+          digitalWrite(ledPins[i], HIGH);  // Turn on the LED corresponding to the finger count
           Serial.print("Turning on LED on pin ");
           Serial.println(ledPins[i]);
         } else {
-          digitalWrite(ledPins[i], LOW);   // Turn off the LEDs for counts higher than fingersUp
+          digitalWrite(ledPins[i], LOW);   // Turn off the other LEDs
           Serial.print("Turning off LED on pin ");
           Serial.println(ledPins[i]);
         }
