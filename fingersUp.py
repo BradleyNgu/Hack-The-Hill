@@ -4,6 +4,8 @@ import time
 from math import sqrt
 import serial
 
+
+
 def sendDataToArduino(data):
     arduino.write(bytes(data, 'utf-8'))  # Send data to Arduino as a string
     time.sleep(0.05)  # Delay to avoid overwhelming the serial communication
@@ -73,78 +75,88 @@ def recognizeGesture(handedness, hand_landmarks):
     return totalFingers
 
 
-# Set up the serial communication (adjust the port and baud rate as needed)
-arduino = serial.Serial(port='/dev/cu.usbmodem101', baudrate=9600, timeout=.1)  # Adjust 'COM3' to your Arduino's port
+def startMediaPipe():
+    # Set up the serial communication (adjust the port and baud rate as needed)
+    arduino = serial.Serial(port='/dev/cu.usbmodem101', baudrate=9600, timeout=.1)  # Adjust 'COM3' to your Arduino's port
 
 
-mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
-mp_hands = mp.solutions.hands
+    mp_drawing = mp.solutions.drawing_utils
+    mp_drawing_styles = mp.solutions.drawing_styles
+    mp_hands = mp.solutions.hands
 
-# For webcam input
-cap = cv2.VideoCapture(0)
-with mp_hands.Hands(
-    max_num_hands=1,
-    model_complexity=0,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5) as hands:
+    # For webcam input
+    cap = cv2.VideoCapture(0)
+    with mp_hands.Hands(
+        max_num_hands=1,
+        model_complexity=0,
+        min_detection_confidence=0.5,
+        min_tracking_confidence=0.5) as hands:
 
-    # Variables for tracking hand stability
-    last_landmarks = None
-    stable_start_time = None
-    stability_threshold = 0.01  # Adjust this value to change sensitivity
-    stability_duration = 1.5  # In seconds
-    read_time = None
-    read_delay = 10
+        # Variables for tracking hand stability
+        last_landmarks = None
+        stable_start_time = None
+        stability_threshold = 0.01  # Adjust this value to change sensitivity
+        stability_duration = 1.5  # In seconds
+        read_time = None
+        read_delay = 10
 
-    while cap.isOpened():
-        success, image = cap.read()
-        if not success:
-            print("Ignoring empty camera frame.")
-            continue
+        while cap.isOpened():
+            success, image = cap.read()
+            if not success:
+                print("Ignoring empty camera frame.")
+                continue
 
-        image = cv2.flip(image, 1)
-        image.flags.writeable = False
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        results = hands.process(image)
+            image = cv2.flip(image, 1)
+            image.flags.writeable = False
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            results = hands.process(image)
 
-        image.flags.writeable = True
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        if results.multi_hand_landmarks:
-            handedness = results.multi_handedness[0].classification[0].label
+            image.flags.writeable = True
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            if results.multi_hand_landmarks:
+                handedness = results.multi_handedness[0].classification[0].label
 
-            for hand_landmarks in results.multi_hand_landmarks:
-                mp_drawing.draw_landmarks(
-                    image,
-                    hand_landmarks,
-                    mp_hands.HAND_CONNECTIONS,
-                    mp_drawing_styles.get_default_hand_landmarks_style(),
-                    mp_drawing_styles.get_default_hand_connections_style())
+                for hand_landmarks in results.multi_hand_landmarks:
+                    mp_drawing.draw_landmarks(
+                        image,
+                        hand_landmarks,
+                        mp_hands.HAND_CONNECTIONS,
+                        mp_drawing_styles.get_default_hand_landmarks_style(),
+                        mp_drawing_styles.get_default_hand_connections_style())
 
-                # Check stability
-                if last_landmarks is not None:
-                    distance = calculateDistance(
-                        hand_landmarks.landmark[mp_hands.HandLandmark.WRIST],
-                        last_landmarks.landmark[mp_hands.HandLandmark.WRIST]
-                    )
+                    # Check stability
+                    if last_landmarks is not None:
+                        distance = calculateDistance(
+                            hand_landmarks.landmark[mp_hands.HandLandmark.WRIST],
+                            last_landmarks.landmark[mp_hands.HandLandmark.WRIST]
+                        )
 
-                    if distance < stability_threshold:
-                        if stable_start_time is None:
-                            stable_start_time = time.time()
-                        if (time.time() - stable_start_time >= stability_duration) and (read_time is None or (time.time() - read_time >= read_delay)):
-                            read_time = time.time()
-                            print(f"Hands stable for {stability_duration} seconds. Please wait {read_delay} seconds for further reads.")
-                            recognizeGesture(handedness, hand_landmarks)
-                            stable_start_time = None  # Reset timer after gesture is recognized
-                    else:
-                        stable_start_time = None
+                        if distance < stability_threshold:
+                            if stable_start_time is None:
+                                stable_start_time = time.time()
+                            if (time.time() - stable_start_time >= stability_duration) and (read_time is None or (time.time() - read_time >= read_delay)):
+                                read_time = time.time()
+                                print(f"Hands stable for {stability_duration} seconds. Please wait {read_delay} seconds for further reads.")
+                                recognizeGesture(handedness, hand_landmarks)
+                                stable_start_time = None  # Reset timer after gesture is recognized
+                        else:
+                            stable_start_time = None
 
-                last_landmarks = hand_landmarks
+                    last_landmarks = hand_landmarks
 
-        cv2.imshow('MediaPipe Hands', image)
+            cv2.imshow('MediaPipe Hands', image)
 
-        # Quit if user presses "Esc"
-        if cv2.waitKey(5) & 0xFF == 27:
-            break
+            # Quit if user presses "Esc"
+            if cv2.waitKey(5) & 0xFF == 27:
+                break
 
-cap.release()
+    cap.release()
+
+
+def main():
+    startMediaPipe()
+
+
+
+if __name__ == "__main__":
+    main()
