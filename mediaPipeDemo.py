@@ -2,6 +2,10 @@ import cv2
 import mediapipe as mp
 import time
 from math import sqrt
+import serial
+
+# Set up the serial communication (adjust the port and baud rate as needed)
+arduino = serial.Serial(port='/dev/cu.usbmodem101', baudrate=9600, timeout=.1)  # Adjust 'COM3' to your Arduino's port
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -10,8 +14,11 @@ mp_hands = mp.solutions.hands
 def calculateDistance(landmark1, landmark2):
     return sqrt((landmark1.x - landmark2.x)**2 + (landmark1.y - landmark2.y)**2 + (landmark1.z - landmark2.z)**2)
 
+def sendDataToArduino(data):
+    arduino.write(bytes(data, 'utf-8'))  # Send data to Arduino as a string
+    time.sleep(0.05)  # Delay to avoid overwhelming the serial communication
 
-def recognizeGesture(handedness):
+def recognizeGesture(handedness, hand_landmarks):
     wrist = hand_landmarks.landmark[0]
     thumb1 = hand_landmarks.landmark[1]
     thumb2 = hand_landmarks.landmark[2]
@@ -52,30 +59,19 @@ def recognizeGesture(handedness):
         totalFingers -= 1
 
     # Check if thumb extended
-    # Right hand
-
-    # print(f"{thumb1.x} vs {thumb2.x} vs {thumb3.x} vs {thumb4.x}")
-    # 0.6111839413642883 vs 0.5484028458595276 vs 0.4903261661529541 vs 0.43976545333862305
-    
     if handedness == "Right":
-        if not(thumb1.x >= thumb4.x*1.3): # may need to adjust number
+        if not(thumb1.x >= thumb4.x * 1.3):  # Adjust this threshold if needed
             totalFingers -= 1
-
-    # Left hand
     else:
-        if not(thumb1.x <= thumb4.x*0.65): # may need to adjust number
+        if not(thumb1.x <= thumb4.x * 0.65):  # Adjust this threshold if needed
             totalFingers -= 1
 
-    # print(handedness)
-    # print(f"{thumb1.x} vs {thumb2.x} vs {thumb3.x} vs {thumb4.x}")
     print(f"{totalFingers} fingers up")
-    return totalFingers
-
-
-    # for i in range(0, 21):
-    #     print(f"Landmark {i}: x={hand_landmarks.landmark[i].x:.4f}, y={hand_landmarks.landmark[i].y:.4f}, z={hand_landmarks.landmark[i].z:.4f}")
-        
     
+    # Send the number of fingers to Arduino
+    sendDataToArduino(str(totalFingers))
+
+    return totalFingers
 
 
 # For webcam input:
@@ -97,6 +93,7 @@ with mp_hands.Hands(
         if not success:
             print("Ignoring empty camera frame.")
             continue
+
         image = cv2.flip(image, 1)
         image.flags.writeable = False
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -114,29 +111,29 @@ with mp_hands.Hands(
                     mp_hands.HAND_CONNECTIONS,
                     mp_drawing_styles.get_default_hand_landmarks_style(),
                     mp_drawing_styles.get_default_hand_connections_style())
-                
+
                 # Check stability
                 if last_landmarks is not None:
                     distance = calculateDistance(
                         hand_landmarks.landmark[mp_hands.HandLandmark.WRIST],
                         last_landmarks.landmark[mp_hands.HandLandmark.WRIST]
                     )
-                    
+
                     if distance < stability_threshold:
                         if stable_start_time is None:
                             stable_start_time = time.time()
                         elif time.time() - stable_start_time >= stability_duration:
                             print("Hand Landmarks (stable for 2 seconds):")
-                            recognizeGesture(handedness)
-                            stable_start_time = None  # Reset timer after printing
+                            recognizeGesture(handedness, hand_landmarks)
+                            stable_start_time = None  # Reset timer after gesture is recognized
                     else:
                         stable_start_time = None
-                
+
                 last_landmarks = hand_landmarks
 
         cv2.imshow('MediaPipe Hands', image)
 
-        # quit if user presses "Esc"
+        # Quit if user presses "Esc"
         if cv2.waitKey(5) & 0xFF == 27:
             break
 
