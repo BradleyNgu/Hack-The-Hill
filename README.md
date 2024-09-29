@@ -1,4 +1,4 @@
-# Hack-The-Hill
+# The Heart Stopper 💔
 
 
 This Python/C++ project uses the MediaPipe library to capture and reconoze hand gesetures and sends the amount of fingers held up to an Arduino through serial communication. The project leverages computer vision to detect hand landmarks and identify how many fingers are extended using MediaPipe's hand tracking model. This information is then transmitted to the Arduino, where it turns a servo motar for a set ammount of time dependant on how many fingures are up.
