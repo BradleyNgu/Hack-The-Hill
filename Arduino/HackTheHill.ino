@@ -7,11 +7,14 @@ Servo myServo;
 int ledPins[] = {2, 3, 4, 5, 6};  // Red, Blue, White, Green, Yellow LEDs for 1-5 fingers
 
 // Angle for each finger count (1 finger = 30 degrees, 2 fingers = 60, etc.)
-int angles[] = {30, 60, 90, 120, 150};  // Servo angles for 1-5 fingers
+int angles[] = {80};  // Servo angles for 1-5 fingers
 
-// Default delay time after a gesture is detected (in milliseconds)
-unsigned long gestureTimeout = 3000;  // 3 seconds
-unsigned long lastGestureTime = 0;    // To keep track of the last time a gesture was detected
+// Hardcoded delay times for each finger count (in milliseconds)
+unsigned long gestureTimeouts[] = {1000, 1500, 2000, 2500, 10000};  // Different delays for 1-5 fingers
+
+// To track the last gesture time
+unsigned long lastGestureTime = 0;    
+unsigned long currentGestureTimeout = 0;  // To store the timeout for the current gesture
 
 void setup() {
   // Attach the servo to its corresponding pin
@@ -64,8 +67,9 @@ void loop() {
         }
       }
 
-      // Record the current time as the last gesture time
-      lastGestureTime = millis();
+      // Set the appropriate gesture timeout for the current number of fingers
+      currentGestureTimeout = gestureTimeouts[fingersUp - 1];  // Set delay based on the number of fingers
+      lastGestureTime = millis();  // Record the time the gesture was detected
     } else {
       // Print an error if the number of fingers is outside the valid range
       Serial.println("Error: Invalid finger count. Expected a value between 1 and 5.");
@@ -73,7 +77,7 @@ void loop() {
   }
 
   // Check if the timeout has passed since the last gesture detection
-  if (millis() - lastGestureTime > gestureTimeout) {
+  if (millis() - lastGestureTime > currentGestureTimeout && currentGestureTimeout > 0) {
     // Return the servo to the default (0 degrees) position
     myServo.write(0);
 
@@ -86,6 +90,7 @@ void loop() {
     Serial.println("Returning to default position (0 degrees) and turning off LEDs.");
 
     // Reset lastGestureTime to prevent continuous execution
-    lastGestureTime = millis() + gestureTimeout;  // Prevent this code from running again until the next valid gesture
+    lastGestureTime = millis() + currentGestureTimeout;  // Prevent this code from running again until the next valid gesture
+    currentGestureTimeout = 0;  // Reset current timeout
   }
 }
