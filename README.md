@@ -1,7 +1,8 @@
 # The Heart Stopper 💔
 
+The Heart Stopper: a means of regulating one’s energy drinking habits whilst maintaining the buzz necessary to tackle life’s biggest challenges, all with the point of a finger. Care to have a drink?
 
-This Python/C++ project uses the MediaPipe library to capture and recognize hand gesetures and sends the amount of fingers held up to an Arduino through serial communication. The project leverages computer vision to detect hand landmarks and identify how many fingers are extended using MediaPipe's hand tracking model. This information is then transmitted to the Arduino, where it turns a servo motar for a set ammount of time dependant on how many fingures are up.
+This Python/C++ project uses the OpenCV and MediaPipe libraries to capture hand positioning. It leverages MediaPipe's visual data collection to detect hand landmarks, then uses vector math to calculate the amount of fingers the user has extended. This information is then transmitted to the Arduino, where it turns a servo motor for a set amount of time dependent on how many fingers are up.
 
 ## Inspiration
 We love energy drinks -- who doesn’t? A quick pick-me-up can cure even the dreariest of moods. However, as we know, it is easy to go overboard unknowingly. Working on a late night project and - next thing you know - you've had several energy drinks within the span of a few short hours! If we could regulate our energy drinking habits all while sitting at the desk, we would be all the better off for it.
