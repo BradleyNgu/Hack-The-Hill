@@ -6,10 +6,7 @@ import serial
 
 
 
-def sendDataToArduino(data):
-    # Set up the serial communication (adjust the port and baud rate as needed)
-    arduino = serial.Serial(port='/dev/cu.usbmodem101', baudrate=9600, timeout=.1)  # Adjust 'COM3' to your Arduino's port
-    
+def sendDataToArduino(data, arduino):    
     arduino.write(bytes(data, 'utf-8'))  # Send data to Arduino as a string
     time.sleep(0.05)  # Delay to avoid overwhelming the serial communication
 
@@ -18,7 +15,7 @@ def calculateDistance(landmark1, landmark2):
     return sqrt((landmark1.x - landmark2.x)**2 + (landmark1.y - landmark2.y)**2 + (landmark1.z - landmark2.z)**2)
 
 
-def recognizeGesture(handedness, hand_landmarks):
+def recognizeGesture(handedness, hand_landmarks, arduino):
     # Unused points are commented out
     # wrist = hand_landmarks.landmark[0]
     # thumb1 = hand_landmarks.landmark[1]
@@ -73,12 +70,15 @@ def recognizeGesture(handedness, hand_landmarks):
     print(f"Fingers up == {totalFingers}")
     
     # Send the number of fingers to Arduino
-    sendDataToArduino(str(totalFingers))
+    sendDataToArduino(str(totalFingers), arduino)
 
     return totalFingers
 
 
 def startMediaPipe():
+    # Set up the serial communication (adjust the port and baud rate as needed)
+    arduino = serial.Serial(port='/dev/cu.usbmodem101', baudrate=9600, timeout=.1)  # Adjust 'port' to your Arduino's port
+    
     mp_drawing = mp.solutions.drawing_utils
     mp_drawing_styles = mp.solutions.drawing_styles
     mp_hands = mp.solutions.hands
@@ -136,7 +136,7 @@ def startMediaPipe():
                             if (time.time() - stable_start_time >= stability_duration) and (read_time is None or (time.time() - read_time >= read_delay)):
                                 read_time = time.time()
                                 print(f"Hands stable for {stability_duration} seconds. Please wait {read_delay} seconds for further reads.")
-                                recognizeGesture(handedness, hand_landmarks)
+                                recognizeGesture(handedness, hand_landmarks, arduino)
                                 stable_start_time = None  # Reset timer after gesture is recognized
                         else:
                             stable_start_time = None
