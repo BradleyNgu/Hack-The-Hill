@@ -1,6 +1,6 @@
 # The Heart Stopper 💔
 
-The Heart Stopper: a means of regulating one’s energy drinking habits whilst maintaining the buzz necessary to tackle life’s biggest challenges, all with the point of a finger. Care to have a drink?
+A means of regulating one’s energy drinking habits whilst maintaining the buzz necessary to tackle life’s biggest challenges, all with the point of a finger. [Care to have a drink?](https://youtu.be/yIoVqAdDfVA)
 
 This Python/C++ project uses the OpenCV and MediaPipe libraries to capture hand positioning. It leverages MediaPipe's visual data collection to detect hand landmarks, then uses vector math to calculate the amount of fingers the user has extended. This information is then transmitted to the Arduino, where it turns a servo motor for a set amount of time dependent on how many fingers are up.
 
