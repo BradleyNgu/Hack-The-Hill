@@ -1,4 +1,5 @@
-# The Heart Stopper 💔 - 1st place for Best uOttawa x Carleton Collaboration 🏆
+# The Heart Stopper 💔
+## 1st place for Best uOttawa x Carleton Collaboration 🏆
 
 A means of regulating one’s energy drinking habits whilst maintaining the buzz necessary to tackle life’s biggest challenges, all with the point of a finger. [Care to have a drink?](https://youtu.be/yIoVqAdDfVA)
 
